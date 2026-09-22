@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BharatSetu MVP</title>
+<style>
+body{font-family:Arial;margin:0;background:#f4f6fb;color:#172033}
+header{background:#172b4d;color:white;padding:28px 8%}
+nav{padding:15px 8%;background:white;display:flex;gap:10px;flex-wrap:wrap}
+button{padding:11px 16px;border:0;border-radius:9px;cursor:pointer}
+.tab.active,.primary{background:#f28c28;color:white}
+main{max-width:1000px;margin:25px auto;padding:0 20px}
+section{display:none;background:white;padding:25px;border-radius:15px;box-shadow:0 4px 16px #0001}
+section.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
+label{display:block;font-weight:bold;margin:12px 0 5px}
+input,select,textarea{width:100%;padding:11px;border:1px solid #ccd3df;border-radius:8px}
+.result{margin-top:20px;padding:18px;background:#fff4e5;border-left:5px solid #f28c28;line-height:1.7}
+.metric{font-size:25px;color:#f28c28;font-weight:bold}
+.small{color:#667085;font-size:13px}
+</style>
+</head>
+<body>
+<header><h1>🌍 BharatSetu</h1><p>AI-Powered Integrated Tourism Ecosystem</p><p>Connect. Personalize. Discover. Grow.</p></header>
+<nav>
+<button class="tab active" data-id="planner">Plan My Trip</button>
+<button class="tab" data-id="stays">Smart Stays</button>
+<button class="tab" data-id="culture">Cultural AI</button>
+<button class="tab" data-id="dashboard">Tourism Dashboard</button>
+</nav>
+<main>
+<section id="planner" class="active">
+<h2>Plan My Trip</h2><p>Generate a demo itinerary based on your preferences.</p>
+<div class="grid">
+<div><label>Destination</label><input id="dest" value="Jaipur"></div>
+<div><label>Duration</label><select id="days"><option>1</option><option selected>2</option><option>3</option></select></div>
+<div><label>Budget (₹)</label><input id="budget" type="number" value="6000"></div>
+<div><label>Interest</label><select id="interest"><option>Heritage</option><option>Local Culture</option><option>Food</option><option>Nature</option></select></div>
+</div>
+<button class="primary" onclick="plan()">Generate Plan</button><div id="planOut"></div>
+</section>
+<section id="stays">
+<h2>Smart Stays</h2><label>Maximum nightly budget (₹)</label><input id="stayBudget" type="number" value="2500">
+<button class="primary" onclick="stays()">Find Stays</button><div id="stayOut"></div>
+</section>
+<section id="culture">
+<h2>Cultural AI</h2><p>Ask a question using the controlled demo knowledge base.</p>
+<textarea id="question" rows="3" placeholder="Why is Hawa Mahal famous?"></textarea>
+<button class="primary" onclick="culture()">Ask</button><div id="cultureOut"></div>
+</section>
+<section id="dashboard">
+<h2>Tourism Dashboard</h2><p class="small">Illustrative demo indicators, not live data.</p>
+<div class="grid">
+<div><p>Registered Providers</p><div class="metric">128</div></div>
+<div><p>Popular Destination</p><div class="metric">Amber Fort</div></div>
+<div><p>Crowd Pressure</p><div class="metric">High</div></div>
+<div><p>Alternative Adoption</p><div class="metric">32%</div></div>
+</div>
+<div class="result">Suggested action: Promote less-crowded destinations and local experiences.</div>
+</section>
+</main>
+<script>
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+document.querySelectorAll("section").forEach(x=>x.classList.remove("active"));
+b.classList.add("active");document.getElementById(b.dataset.id).classList.add("active");
+});
+async function plan(){
+  const destination = document.getElementById("dest").value || "your destination";
+  const duration = Number(document.getElementById("days").value);
+  const budget = Number(document.getElementById("budget").value);
+  const interest = document.getElementById("interest").value;
+  const output = document.getElementById("planOut");
+
+  output.innerHTML = '<div class="result">⏳ Sending your request to the BharatSetu backend...</div>';
+
+  try {
+    const response = await fetch("http://localhost:8000/api/plan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ destination, duration, budget, interest })
+    });
+
+    if (!response.ok) throw new Error("Backend request failed");
+
+    const data = await response.json();
+
+    output.innerHTML = `<div class="result">
+      <b>Backend Response</b><br>
+      📍 Destination: ${data.destination}<br>
+      🗓️ Duration: ${data.duration} day(s)<br>
+      💰 Budget: ₹${Number(data.budget).toLocaleString("en-IN")}<br>
+      🎯 Interest: ${data.interest}<br><br>
+      ${data.suggestion}<br><br>
+      <span class="small">✅ This result was received from the Python backend.</span>
+    </div>`;
+  } catch (error) {
+    output.innerHTML = `<div class="result">❌ Could not connect to the backend.<br>
+      Please check that app.py is running at http://localhost:8000.<br>
+      <span class="small">Error: ${error.message}</span>
+    </div>`;
+  }
+}
+function stays(){
+let b=Number(document.getElementById("stayBudget").value);
+let data=[["Heritage Guest House",1800],["City Comfort Stay",2300],["Budget Homestay",1400]];
+let result=data.filter(x=>x[1]<=b).map(x=>`<p><b>${x[0]}</b><br>₹${x[1]} / night</p>`).join("");
+document.getElementById("stayOut").innerHTML=`<div class="result">${result||"No demo stays found."}<span class="small">Demo listings only; no booking availability.</span></div>`;
+}
+function culture(){
+let q=document.getElementById("question").value.toLowerCase();
+let a="This demo answers questions about Hawa Mahal, Amber Fort and Jaipur culture.";
+if(q.includes("hawa"))a="Hawa Mahal is a famous Jaipur landmark known for its distinctive façade and royal-era history.";
+if(q.includes("amber")||q.includes("amer"))a="Amber Fort is a historic hill fort near Jaipur, known for its architecture and Rajput-era heritage.";
+document.getElementById("cultureOut").innerHTML=`<div class="result">${a}<br><span class="small">Production version: verified-source RAG will be added later.</span></div>`;
+}
+</script>
+</body>
+</html>
