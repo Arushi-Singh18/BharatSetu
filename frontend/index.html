@@ -66,36 +66,88 @@ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
 document.querySelectorAll("section").forEach(x=>x.classList.remove("active"));
 b.classList.add("active");document.getElementById(b.dataset.id).classList.add("active");
 });
-async function plan(){
-  const destination = document.getElementById("dest").value || "your destination";
-  const duration = Number(document.getElementById("days").value);
-  const budget = Number(document.getElementById("budget").value);
-  const interest = document.getElementById("interest").value;
-  const output = document.getElementById("planOut");
 
-  output.innerHTML = '<div class="result">⏳ Sending your request to the BharatSetu backend...</div>';
+async function plan() {
+    const destination = document.getElementById("dest").value;
+    const duration = Number(document.getElementById("days").value);
+    const budget = Number(document.getElementById("budget").value);
+    const interest = document.getElementById("interest").value;
 
-  try {
-    const response = await fetch("http://localhost:8000/api/plan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ destination, duration, budget, interest })
-    });
+    const output = document.getElementById("planOut");
 
-    if (!response.ok) throw new Error("Backend request failed");
+    output.innerHTML = `
+        <div class="result">
+            Generating your personalized plan...
+        </div>
+    `;
 
-    const data = await response.json();
+    try {
+        const response = await fetch("http://localhost:8000/api/plan", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                destination: destination,
+                duration: duration,
+                budget: budget,
+                interest: interest
+            })
+        });
 
-    output.innerHTML = `<div class="result">
-      <b>Backend Response</b><br>
-      📍 Destination: ${data.destination}<br>
-      🗓️ Duration: ${data.duration} day(s)<br>
-      💰 Budget: ₹${Number(data.budget).toLocaleString("en-IN")}<br>
-      🎯 Interest: ${data.interest}<br><br>
-      ${data.suggestion}<br><br>
-      <span class="small">✅ This result was received from the Python backend.</span>
-    </div>`;
-  } catch (error) {
+        const data = await response.json();
+
+        if (data.status !== "success") {
+            throw new Error(data.message);
+        }
+
+        const places = data.recommended_places
+            .map(place => `
+                <li>
+                    <strong>${place.name}</strong>
+                    <br>
+                    Category: ${place.category}
+                    <br>
+                    Crowd Level: ${place.crowd_level}
+                </li>
+            `)
+            .join("");
+
+        output.innerHTML = `
+            <div class="result">
+                <h3>Your Personalized Plan</h3>
+
+                <p>📍 Destination: ${data.destination}</p>
+                <p>🗓️ Duration: ${data.duration} day(s)</p>
+                <p>💰 Budget: ₹${data.budget}</p>
+                <p>🎯 Interest: ${data.interest}</p>
+
+                <h4>Recommended Places</h4>
+                <ul>${places}</ul>
+
+                <p>
+                    <strong>BharatSetu Insight:</strong>
+                    Consider less-crowded locations when popular
+                    destinations experience high visitor pressure.
+                </p>
+            </div>
+        `;
+
+    } catch (error) {
+        output.innerHTML = `
+            <div class="result">
+                ❌ Unable to connect to the backend.
+                <br>
+                Please check that your Python server is running.
+                <br>
+                Error: ${error.message}
+            </div>
+        `;
+    }
+}
+
+    
+    catch (error) {
     output.innerHTML = `<div class="result">❌ Could not connect to the backend.<br>
       Please check that app.py is running at http://localhost:8000.<br>
       <span class="small">Error: ${error.message}</span>
