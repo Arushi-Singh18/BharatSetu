@@ -1,0 +1,27 @@
+
+[
+  {
+    "name": "Amber Fort",
+    "city": "Jaipur",
+    "category": "Heritage",
+    "crowd_level": "High"
+  },
+  {
+    "name": "Gaitore",
+    "city": "Jaipur",
+    "category": "Heritage",
+    "crowd_level": "Medium"
+  },
+  {
+    "name": "Local Craft Workshop",
+    "city": "Jaipur",
+    "category": "Local Culture",
+    "crowd_level": "Low"
+  },
+  {
+    "name": "Jal Mahal Viewpoint",
+    "city": "Jaipur",
+    "category": "Nature",
+    "crowd_level": "Medium"
+  }
+]
