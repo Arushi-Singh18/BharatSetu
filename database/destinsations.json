@@ -1,27 +1,10 @@
+DATA_FILE = (
+    Path(__file__).resolve().parent.parent
+    / "data"
+    / "destinations.json"
+)
 
-[
-  {
-    "name": "Amber Fort",
-    "city": "Jaipur",
-    "category": "Heritage",
-    "crowd_level": "High"
-  },
-  {
-    "name": "Gaitore",
-    "city": "Jaipur",
-    "category": "Heritage",
-    "crowd_level": "Medium"
-  },
-  {
-    "name": "Local Craft Workshop",
-    "city": "Jaipur",
-    "category": "Local Culture",
-    "crowd_level": "Low"
-  },
-  {
-    "name": "Jal Mahal Viewpoint",
-    "city": "Jaipur",
-    "category": "Nature",
-    "crowd_level": "Medium"
-  }
-]
+
+def load_destinations():
+    with open(DATA_FILE, "r", encoding="utf-8") as file:
+        return json.load(file)
