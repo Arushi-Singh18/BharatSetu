@@ -54,10 +54,12 @@ class BharatSetuHandler(BaseHTTPRequestHandler):
             })
 
         elif self.path == "/api/destinations":
-            self.send_json({
-                "status": "success",
-                "destinations": DESTINATIONS
-            })
+            destinations = load_destinations()
+
+             self.send_json({
+                 "status": "success",
+                 "destinations": destinations
+    })
 
         else:
             self.send_json({
@@ -84,13 +86,16 @@ class BharatSetuHandler(BaseHTTPRequestHandler):
             budget = float(data.get("budget", 0))
             interest = data.get("interest", "Heritage")
 
-            matches = [
-                place for place in DESTINATIONS
-                if place["category"].lower() == interest.lower()
-            ]
+        destinations = load_destinations()
+
+        matches = [
+           place for place in destinations
+           if place["category"].lower() == interest.lower()
+
+        ]    
 
             if not matches:
-                matches = DESTINATIONS
+                matches = destinations
 
             response = {
                 "status": "success",
