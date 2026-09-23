@@ -2,29 +2,12 @@ from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 
+DATA_FILE = Path(__file__).resolve().parent / "destinations.json"
 
-DESTINATIONS = [
-    {
-        "name": "Amber Fort",
-        "category": "Heritage",
-        "crowd_level": "High"
-    },
-    {
-        "name": "Gaitore",
-        "category": "Heritage",
-        "crowd_level": "Medium"
-    },
-    {
-        "name": "Local Craft Workshop",
-        "category": "Local Culture",
-        "crowd_level": "Low"
-    },
-    {
-        "name": "Jal Mahal Viewpoint",
-        "category": "Nature",
-        "crowd_level": "Medium"
-    }
-]
+def load_destinations():
+    with open(DATA_FILE, "r", encoding="utf-8") as file:
+        return json.load(file)
+   
 
 
 class BharatSetuHandler(BaseHTTPRequestHandler):
@@ -56,9 +39,9 @@ class BharatSetuHandler(BaseHTTPRequestHandler):
         elif self.path == "/api/destinations":
             destinations = load_destinations()
 
-             self.send_json({
-                 "status": "success",
-                 "destinations": destinations
+            self.send_json({
+               "status": "success",
+               "destinations": destinations
     })
 
         else:
@@ -85,17 +68,18 @@ class BharatSetuHandler(BaseHTTPRequestHandler):
             duration = int(data.get("duration", 1))
             budget = float(data.get("budget", 0))
             interest = data.get("interest", "Heritage")
-
+        except Exception:
+            self.send_json({"status": "error", "message": "Invalid JSON data"}, 400)
+            return    
         destinations = load_destinations()
 
         matches = [
-           place for place in destinations
-           if place["category"].lower() == interest.lower()
+            place for place in destinations
+            if place["category"].lower() == interest.lower()
+        ]
 
-        ]    
-
-            if not matches:
-                matches = destinations
+        if not matches:
+            matches = destinations
 
             response = {
                 "status": "success",
@@ -109,11 +93,7 @@ class BharatSetuHandler(BaseHTTPRequestHandler):
 
             self.send_json(response)
 
-        except (json.JSONDecodeError, ValueError):
-            self.send_json({
-                "status": "error",
-                "message": "Invalid request"
-            }, 400)
+        
 
 
 if __name__ == "__main__":
@@ -122,3 +102,9 @@ if __name__ == "__main__":
     print("BharatSetu backend running at http://localhost:8000")
 
     server.serve_forever()
+def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
